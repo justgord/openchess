@@ -1,0 +1,15 @@
+#!/bin/bash
+# backup to zz
+#
+PWD=`pwd`
+NAM=$(basename $PWD)
+ZTS=`date +%Y%m%d_%H%M%S`
+ZFN=$NAM.$ZTS.tgz
+#
+rm -f `find . -name "*.o"`
+rm -f `find . -name "*.DS_Store"`
+# 
+cd ..
+tar -zcvf ./zz/$ZFN $NAM;
+cd -
+echo zipped backup : ../zz/$ZFN

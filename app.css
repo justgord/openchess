@@ -1,0 +1,117 @@
+body
+{
+    font-family:Arial,Helvetica,sans-serif,sans;
+    font-size:14px;
+}
+
+.square
+{
+    position:absolute;
+    width:60px;
+    height:60px;
+    background-image-width:60px;
+    background-image-height:60px;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+.board
+{
+    position:absolute;
+    left:130px;
+    top:10px;
+    width:480px;
+    height:480px;
+    border:2px solid darkgray;
+}
+
+.row
+{
+    width:480px;
+    height:60px;
+}
+
+.white
+{
+    background-color:#ccc;
+}
+.black
+{
+    background-color:#555;
+}
+
+.moving
+{
+    background-color:#667;
+}
+
+.bp { background-image:url(assets/bp.svg) }
+.bq { background-image:url(assets/bq.svg) }
+.bk { background-image:url(assets/bk.svg) }
+.bn { background-image:url(assets/bn.svg) }
+.bb { background-image:url(assets/bb.svg) }
+.br { background-image:url(assets/br.svg) }
+
+.wp { background-image:url(assets/wp.svg) }
+.wq { background-image:url(assets/wq.svg) }
+.wk { background-image:url(assets/wk.svg) }
+.wn { background-image:url(assets/wn.svg) }
+.wb { background-image:url(assets/wb.svg) }
+.wr { background-image:url(assets/wr.svg) }
+
+.button
+{
+    position:absolute;
+    height:20px;
+    width:100px;
+    padding-top:4px;
+    padding-left:12px;
+    background-color: lightgray;
+    border:1px solid gray;
+}
+
+.move-list
+{
+    position:absolute;
+    top:10px;
+    left:630px;
+    width:164px;
+    height:240px;
+    overflow-y:scroll;
+    overflow-x:hidden;
+    border:1px solid gray;
+}
+
+.move-list-w
+{
+    position:absolute;
+    background-color: #eee;
+    top:0px;
+    left:0px;
+    width:80px;
+}
+.move-list-b
+{
+    position:absolute;
+    background-color: #eee;
+    top:0px;
+    left:70px;
+    width:80px;
+}
+.move-header
+{
+    background-color: #ddd;
+    height:20px;
+    width:70px; 
+    padding-left:10px;
+}
+
+.move-code
+{
+    display:block;
+    height:20px;
+    width:70px; 
+    padding-left:10px;
+}
