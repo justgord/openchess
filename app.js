@@ -125,7 +125,7 @@ function check_pawn(v, mv)
 {
     var yok;
 
-    if (whose_move()=='b')
+    if (mv.pc[0]=='b')
     {
         yok = (v.y==-1);
         if (parseInt(mv.from[1])==7)
@@ -142,6 +142,11 @@ function check_pawn(v, mv)
         return false;
 
     var dx = Math.abs(v.x);
+
+    if (mv.pc[0]=='w' && mv.to[1]=="8")
+        mv.promote=1;
+    if (mv.pc[0]=='b' && mv.to[1]=="1")
+        mv.promote=1;
 
     return move.take ? dx==1 : dx==0; 
 }
@@ -306,6 +311,52 @@ function show_move(code)
     $(".move-list")[0].scrollTop=50000;
 }
 
+function select_piece_dialog(types, onselected)
+{
+    var dvm = divcl('select-menu')
+                .css('height', types.length*W)
+                .css('width', W)
+                .appendTo("body");
+
+    $.blockUI({ 
+        message: dvm, 
+            css: 
+            { 
+                top:    200, 
+                left:   260, 
+                width:  types.length*W, 
+                height: W, 
+                border: "2px solid blue"
+            }
+        });
+
+    function type_sq(tp)
+    {
+        var t=tp;
+
+        var sq = divcl('square')
+            .addClass('white')
+            .addClass(t)
+            .css('left',i*W)
+            .appendTo(dvm);
+
+        function tapped()
+        {
+            onselected(t);
+            $.unblockUI();
+            // workaround for reappearing menu
+            setTimeout(function () {
+                $(".select-menu").remove();     
+            }, 402);
+        }
+
+        sq.on(tapevent, tapped);
+    }
+    for(var i in types)
+        type_sq(types[i]);
+}
+
+
 function do_move()
 {
     var code = move_code();
@@ -341,6 +392,24 @@ function do_move()
         show_move_board({pc:"br",from:"a8",to:"d8"});
     if (move.castle=="g8")
         show_move_board({pc:"br",from:"h8",to:"f8"});
+
+    // promote pawn ?
+
+    if (move.promote)
+    {
+        var c = move.pc[0];
+        var mv = _.clone(move);
+        function onselected(t)
+        {
+            mv.take=mv.pc;
+            mv.pc=t;
+            var scode="="+t[1].toUpperCase();
+            moves[moves.length-1]+=scode;
+            $('.move-list-'+c+' .move-code :last').append(scode) ;
+            show_move_board(mv);
+        }
+        select_piece_dialog([c+'q',c+'b',c+'n',c+'r'],onselected);
+    }
 
     // remember moves that prevent castling
 

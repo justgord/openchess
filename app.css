@@ -115,3 +115,9 @@ body
     width:70px; 
     padding-left:10px;
 }
+
+.select-menu
+{
+    width:60px;
+    xxx-border:4px solid blue;
+}
