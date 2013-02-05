@@ -61,6 +61,14 @@ body
 .wb { background-image:url(assets/wb.svg) }
 .wr { background-image:url(assets/wr.svg) }
 
+.buttons
+{
+    position:absolute;
+    top:10px;
+    left:650px;
+    width:110px;
+}
+
 .button
 {
     position:absolute;
@@ -75,7 +83,7 @@ body
 .move-list
 {
     position:absolute;
-    top:10px;
+    top:250px;
     left:630px;
     width:164px;
     height:240px;

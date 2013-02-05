@@ -27,6 +27,7 @@ function divcl(sclass)
 
 var fen_new_game = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+var sfen_puzzle;
 
 var fen_puzzles = 
 [
@@ -44,17 +45,18 @@ var fen_puzzles =
     "r1bq2r1/b4pk1/p1pp1p2/1p2pP2/1P2P1PB/3P4/1PPQ2P1/R3K2R w -"        // white in 2
 ];
 
+var tapevent = 'click';
+
 var W=60;
-
 var move=null;
-
 var moves = [];
-
 var positions;
-
 var w;
 var b;
+var make_piece;
 
+var bntop=10;
+var npuzzle=0;
 
 function move_code()
 {
@@ -252,10 +254,7 @@ function check_path_clear(cfr, cto, v)
         var sqc = alpha(cp.x,cp.y);
 
         if (positions[sqc])
-        {
-            //clog('obstacle at '+sqc);
             return false;
-        }
     }
 
     return true; 
@@ -293,6 +292,13 @@ function check_move(mv)
     var v = relative_movement(cfr, cto);
     var t = mv.pc[1];
     var check=checks[t];
+
+    if (!check)
+    {
+        clog("ERROR : BAD PIECE CODE");
+        jlog(mv);
+        return;
+    }
 
     if (!check(v, mv))
         return false;
@@ -357,28 +363,30 @@ function select_piece_dialog(types, onselected)
 }
 
 
+function show_move_board(mv)
+{
+    var sqfr=$("#"+mv.from);
+    var sqto=$("#"+mv.to);
+
+    sqfr.removeClass("moving");
+
+    sqfr.removeClass(mv.pc);
+    if (mv.pc!="zz")
+        sqto.addClass(mv.pc);
+    if (mv.take)
+        sqto.removeClass(mv.take);
+
+    delete positions[mv.from];
+    if (mv.pc!="zz")
+        positions[mv.to]=mv.pc;
+}
+
 function do_move()
 {
     var code = move_code();
 
     show_move(code);
     moves.push(code);
-
-    function show_move_board(mv)
-    {
-        var sqfr=$("#"+mv.from);
-        var sqto=$("#"+mv.to);
-
-        sqfr.removeClass("moving");
-
-        sqfr.removeClass(mv.pc);
-        sqto.addClass(mv.pc);
-        if (mv.take)
-            sqto.removeClass(mv.take);
-
-        delete positions[mv.from];
-        positions[mv.to]=mv.pc;
-    }
 
     show_move_board(move);
 
@@ -432,10 +440,22 @@ function whose_move()
     return col;
 }
 
+function click_square_puzzle(sq)
+{
+    move = {"pc":make_piece, "from":sq,"to":sq};
+    var pc = positions[sq];
+    if (pc)
+        move.take=pc;
+    show_move_board(move);
+}
+
 function click_square() 
 {
     var dvsq = $(this);
     var sq = dvsq.attr('id');    
+
+    if (make_piece)
+        return click_square_puzzle(sq);
 
     var pc = positions[sq];
 
@@ -531,14 +551,15 @@ function draw_board()
         .append(dvbd)
 }
 
-var bntop=10;
 function button(stitle, action)
 {
+    var sid = "button-"+stitle.replace(" ","-").toLowerCase();
     divcl('button')
         .css('top',bntop)
         .on(tapevent ,action)
+        .attr("id", sid)
         .html(stitle)
-        .appendTo("body");
+        .appendTo(".buttons");
     bntop+=32;
 }
 
@@ -587,7 +608,53 @@ function fen_load(sfen)
     }
 }
 
-var npuzzle=0;
+function fen_read()
+{
+    var sfen="";
+
+    function each_square(cb)
+    {
+        for (var j=0;j<8;j++)
+            for (var i=0;i<8;i++)
+                cb(alpha(i,j));
+    }
+
+    var run=0;
+    var row=0;
+    function fender(sq)
+    {
+        var pc = positions[sq];
+        if (!pc)
+            run++;
+        else
+        {
+            if (run>0)
+                sfen+=run;
+            var p = pc[1];
+            if (pc[0]=="w")
+                p=p.toUpperCase();
+            sfen+=p;
+            run=0;
+        }
+        row++;
+        if (row==8)
+        {
+            if (run>0)
+                sfen+=run;
+            sfen+="/";
+            row=0;
+            run=0;
+        }
+    }
+
+    each_square(fender);
+
+    sfen+=" w";     //TODO //black to move etc
+
+    clog(sfen);
+    return sfen;
+}
+
 function next_puzzle()
 {
     clear_board();
@@ -604,7 +671,77 @@ function new_game()
 }
 
 
-var tapevent = 'click';
+function make_puzzle()
+{
+    var types=[
+        "wk","wq","wb","wr","wn","wp", "zz",
+        "bk","bq","bb","br","bn","bp", "zz"
+    ];
+
+    var J=types.length/2;
+    var h = J*W;
+    var w = 2*W;
+
+    $(".select-menu").remove();
+
+    if (make_piece)
+    {
+        make_piece=null;
+        delete move;
+        delete moves;
+        $(".move-code").remove();
+        for (var k in positions)
+        {
+            var pc=positions[k];
+            if (pc=="zz")
+                delete positions[k];
+        }
+
+        sfen_puzzle = fen_read();
+        return;
+    }
+
+    var dvm = divcl('select-menu')
+                .css("position", "absolute")
+                .css("opacity", 0.6)
+                .css('top', 48)
+                .css('left',  5)
+                .css('height', h)
+                .css('width', w)
+                .appendTo("body");
+
+    function type_sq(tp,i,j)
+    {
+        var t=tp;
+
+        var sq = divcl('square')
+            .addClass(t)
+            .css('left',i*W)
+            .css('top',j*W)
+            .appendTo(dvm);
+
+        sq.addClass((i+j)%2 ? 'white' : 'black');
+
+        function tapped()
+        {
+            make_piece = t;
+            $(".select-menu .square").removeClass("moving");
+            sq.addClass("moving");
+        }
+
+        sq.on(tapevent, tapped);
+
+        if (tp=="wp")
+            tapped();
+    }
+
+    var k=0;
+    for (var i=0;i<2;i++)
+        for (var j=0;j<J;j++,k++)
+            type_sq(types[k], i, j);
+
+}
+
 
 $(document).ready(function(){
 
@@ -612,6 +749,11 @@ $(document).ready(function(){
 
     new_game();
 
+    divcl("buttons").appendTo("body");
+
     button("New Game",      new_game);
-    button("New Puzzle",    next_puzzle);
+    button("Next Puzzle",   next_puzzle);
+    button("Make Puzzle",   make_puzzle);
+
+    $("#button-make-puzzle").hide();
 });
